@@ -1,0 +1,43 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use feature 'say';
+
+use lib '../lib';
+use Tor::ControlPort::ChangeIp;
+
+if (!$ARGV[0] or $ARGV[0] eq '-h' or $ARGV[0] eq '--help') {
+	say 'Usage: '.$0.' --change';
+say <<EOF;
+
+# Set tor control protocol password
+export TOR_CP_PASSWORD='123456';
+
+# Set tor control protocol host
+export TOR_CP_HOST='127.0.0.1';
+
+# Set tor control protocol port
+export TOR_CP_PORT='9051';
+EOF
+	exit;
+}
+
+exit unless ($ARGV[0] eq '--change');
+
+my $tcp = Tor::ControlPort::ChangeIp->new(
+	host => $ENV{TOR_CP_HOST},
+	port => $ENV{TOR_CP_PORT},
+	);
+
+unless ($ENV{TOR_CP_PASSWORD}?$tcp->auth($ENV{TOR_CP_PASSWORD}):$tcp->auth) {
+	say '[!] '."Can't auth!";
+	exit;
+}
+say '[i] Auth OK';
+
+if ($tcp->ChangeIp) {
+	say '[i] IP chenged!';
+} else {
+	say '[!] IP not chenged!';
+}
